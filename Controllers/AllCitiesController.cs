@@ -19,13 +19,61 @@ namespace WebApplication12.Controllers
             //      new { id=2, name = "Jaipur1" },
             //        new { id=3, name = "Jaipur2" }
             //});
-            return new JsonResult(CityDataStore.Current.Cities);
+            // return new JsonResult(CityDataStore.Current.Cities);
+            var temp = new JsonResult(CityDataStore.Current.Cities);
+            temp.StatusCode = 200;
+            return temp;
+
         }
-        [HttpGet("{id}")]
-        public JsonResult GetCity(int id)
+        [HttpGet("{id}", Name ="GetCity")]
+        public IActionResult GetCity(int id)
         {
 
-            return new JsonResult(CityDataStore.Current.Cities.FirstOrDefault(x => x.id == id));
+            var returnedcity =  CityDataStore.Current.Cities.FirstOrDefault(x => x.id == id);
+            if(returnedcity == null)
+            {
+                return NotFound();
+            }
+            return Ok(returnedcity);
+        }
+        [HttpPost]
+        public IActionResult PostCity([FromBody] City item)
+        {
+            CityDataStore.Current.Cities.Add(item);
+            return CreatedAtRoute("GetCity", new { id = item.id }, item);
+        }
+        [HttpPut("{id}")]
+        public IActionResult PutCity(int id , [FromBody] City item)
+        {
+            if(item ==null)
+            {
+                return BadRequest();
+            }
+            if(item.Name == null & item.Description == null)
+            {
+                return BadRequest();
+            }
+            var data = CityDataStore.Current.Cities.FirstOrDefault(i => i.id == id);
+            if(data ==null)
+            {
+                return NotFound();
+            }
+            data.Name = item.Name;
+            data.Description = item.Description;
+            data.Interest = item.Interest;
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteCity(int id)
+        {
+            var data = CityDataStore.Current.Cities.FirstOrDefault(i => i.id == id);
+            if (data == null)
+            {
+                return NotFound();
+            }
+            CityDataStore.Current.Cities.Remove(data);
+            return NoContent();
         }
 
     }
